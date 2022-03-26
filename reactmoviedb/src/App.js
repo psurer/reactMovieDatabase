@@ -59,13 +59,14 @@ function App() {
   return (
     <Fragment className="App">
       <section>
+      <AddMovie onAddMovie={addMovieHandler} />
+      </section>
       <header className="App-header">
           Movie DB Search </header>
           <section>
             <button onClick={fetchMoviesHandler}>Fetch Movies</button>
           </section>
           <section>{content}</section>
-          </section>
     </Fragment>
   );
 } 
