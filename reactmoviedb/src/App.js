@@ -1,6 +1,7 @@
 import React, { useState, Fragment, useEffect, useCallback } from 'react';
 // import logo from './logo.svg';
 import MoviesList from './components/MoviesList';
+import AddMovie from './components/AddMovie';
 import './App.module.css';
 // how we send HTTP requests from inside a react app to a backend
 function App() {
@@ -12,14 +13,14 @@ function App() {
   setIsLoading(true); // we change the state when we start to load 
   setError(null); // here we try some code and catch any potential errors
   try {
-    const response = await fetch('https://swapi.dev/api/films/');
-    const data = await response.json();
+    const response = await fetch('https://swapi.dev/api/https://react-http-c5725-default-rtdb.firebaseio.com/movies.json');
 
     if (!response.ok){ // signals if response was successful or not {
        throw new Error('uh oh, something went wrong!');
     }
+    const data = await response.json();
 
-       const transformedMovies = data.results.map((movieData) => {
+    const transformedMovies = data.results.map((movieData) => {
          return {
            id: movieData.episode_id,
            title: movieData.title,
@@ -36,13 +37,17 @@ function App() {
    setIsLoading(false); // we always want to stop loading even if there is no error
   }, []);
   useEffect(() => {
-
     fetchMoviesHandler();
    }, [fetchMoviesHandler]); // our second arguement is this array of dependencies
    // we will define when this useEffect function should be executed again
    // it only is executed again if the dependencies listed here change
   // the values in the content variable will differ based on the state we have 
+  function addMovieHandler(movie) {
+    console.log(movie);
+  }
+
   let content = <p>Found No Movies</p>
+  
   if (movies.length > 0) {
     content = <MoviesList movies={movies} />
   }
@@ -135,5 +140,7 @@ Before:
   is re-evalutated and function is called again and so on, this is why we use useEffect
   This is great when used as part of the component rende r cycle
   but maybe not always when the component re-renders
+
+  free to use NO CODE backend = FIREBASE :D 
 
   */
