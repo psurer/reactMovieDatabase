@@ -6,24 +6,49 @@ import './App.module.css';
 function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // we do not load data initially
+  const [error, setError] = useState(null);
 
   async function fetchMoviesHandler() {
   setIsLoading(true); // we change the state when we start to load 
-   const response = await fetch('https://swapi.dev/api/films/')
-   const data = await response.json();
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        // now this is transformed and we store this with setMovie below
-        };
-      });  // this converts every object in the results array into a new object , an array full of new objects will be stored in transformed movies
-      setMovies(transformedMovies);  // we now have the parsed and extracted movies
-      // once all of these are done we call setIsLoading again and set to false because we have some data
-      setIsLoading(false);
+  setError(null); // here we try some code and catch any potential errors
+  try {
+    const response = await fetch('https://swapi.dev/api/films/');
+    const data = await response.json();
+
+    if (!response.ok){ // signals if response was successful or not {
+       throw new Error('uh oh, something went wrong!');
+    }
+
+       const transformedMovies = data.results.map((movieData) => {
+         return {
+           id: movieData.episode_id,
+           title: movieData.title,
+           openingText: movieData.opening_crawl,
+           releaseDate: movieData.release_date,
+         // now this is transformed and we store this with setMovie below
+         };
+       });  // this converts every object in the results array into a new object , an array full of new objects will be stored in transformed movies
+       setMovies(transformedMovies);  // we now have the parsed and extracted movies
+       // once all of these are done we call setIsLoading again and set to false because we have some data
+   }catch (error) { // if any error is thrown in the above code, we will catch it here 
+      setError.apply(error.message);
+   }
+   setIsLoading(false); // we always want to stop loading even if there is no error
+  } 
+  // the values in the content variable will differ based on the state we have 
+  let content = <p>Found No Movies</p>
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />
   }
+
+  if (error){
+    content = <p>{error}</p>
+  }
+
+  if (isLoading) {
+    content = <p>Loading...</p>
+  }
+
 
   return (
     <Fragment className="App">
@@ -33,11 +58,7 @@ function App() {
           <section>
             <button onClick={fetchMoviesHandler}>Fetch Movies</button>
           </section>
-          <section>
-            {!isLoading && <MoviesList movies={movies}/>}  
-            {isLoading && <p>Loading...</p>}
-            {!isLoading && movies.length === 0 && <p> No Movies Found. </p>} 
-          </section>
+          <section>{content}</section>
           </section>
     </Fragment>
   );
@@ -68,9 +89,33 @@ Before:
     });
   }
 
+  We Want to let our User know which state we have: 
+  We have movies
+  We are loading Movies
+  We have no movies 
+
+            {!isLoading && movies.length > 0 && <MoviesList movies={movies}/>}  
+            {!isLoading && movies.length === 0 && !error && <p> No Movies Found. </p>} 
+            {!isLoading && error && <p>{error}</p>}
+            {isLoading && movies.length && <p>Loading...</p>}
 
  {!isLoading && <MoviesList movies={movies}/>}  // if this is not loading, then we render the moviesList
  {isLoading && <p>Loading...</p>} // if it is loading we render this p tag to say it is working
  {!isLoading && movies.length === 0 && <p> No Movies Found. } // if there is an empty array and no movies to display, then we can use this state
 
-*/
+
+  managing error state 
+  {!isLoading && error && <p>{error}</p>} // we are not loading and there is err we wender text
+
+ HERE we learned how to handle all the states we might have when sending an HTTP Request
+ This is important, because no matter to which backend app we are talking to, 
+ we will ALWAYS have these diff states: 
+
+  We might always be waiting for a response
+  we might always be getting errors
+  we might always be getting back our data (hopefully)
+  and Our data might always be empty
+
+  it is important to know how to handle these scenarios
+
+  */
