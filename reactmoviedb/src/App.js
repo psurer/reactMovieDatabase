@@ -1,67 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 // import logo from './logo.svg';
-import './App.css';
-import { Fragment } from 'react';
-
+import MoviesList from './components/MoviesList';
+import './App.module.css';
+// how we send HTTP requests from inside a react app to a backend
 function App() {
   const [movies, setMovies] = useState([]);
-  function fetchMoviesHandler() {
-    // fetch API is built into JS to fetch or send data
-    // we can use the fetch HTTP requests and work with Responses
-    // here we use the fetch function the browser makes available to us
-    fetch('https://swapi.dev/api/films'
-      /* fetch returns a response and then allows us to react to any potential
-       erros we might be getting 
-       sending HTTP req is an Asynchronous task , it doesn't finish immediately
-       it can take milliseconds or so */
+  const [isLoading, setIsLoading] = useState(false); // we do not load data initially
 
-    /* we get a response and in the function body we can use the response the response arguemnet here in an obj with data about response
-      // this API sends back data in JSON format, looks like JS object
-      but keys are wrapped in double quotes etc
-      No methods just data in JSON data
-      we need to translate it to a JS OBJECT using the built in method JSON
-      */
-    ).then(res => {
-      return response.json();
-
-    }).then(data => {
-      setMovies(data.results);  // we now have the parsed and extracted movies
-    }); // 
-
+  async function fetchMoviesHandler() {
+  setIsLoading(true); // we change the state when we start to load 
+   const response = await fetch('https://swapi.dev/api/films/')
+   const data = await response.json();
+      const transformedMovies = data.results.map((movieData) => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releaseDate: movieData.release_date,
+        // now this is transformed and we store this with setMovie below
+        };
+      });  // this converts every object in the results array into a new object , an array full of new objects will be stored in transformed movies
+      setMovies(transformedMovies);  // we now have the parsed and extracted movies
+      // once all of these are done we call setIsLoading again and set to false because we have some data
+      setIsLoading(false);
   }
-  // const dummyMovies = [
-  //   {
-  //     id: 1,
-  //     title: "Some Dummy Movie",
-  //     openingText: "this is the opening text of the movie",
-  //     releaseDate: "2020-05-18"
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Some Dummy Movie 2",
-  //     openingText: "this is the opening text of the movie",
-  //     releaseDate: "2021-05-19"
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "Some Dummy Movie 3",
-  //     openingText: "this is the opening text of the movie",
-  //     releaseDate: "2022-05-20"
-  //   }
-  // ];
 
   return (
     <Fragment className="App">
+      <section>
       <header className="App-header">
           Movie DB Search </header>
           <section>
-            <button>Fetch Movies</button>
+            <button onClick={fetchMoviesHandler}>Fetch Movies</button>
           </section>
           <section>
-            <MoviesList movies={movies}/>
+            {!isLoading && <MoviesList movies={movies}/>}  
+            {isLoading && <p>Loading...</p>}
+            {!isLoading && movies.length === 0 && <p> No Movies Found. </p>} 
+          </section>
           </section>
     </Fragment>
   );
 } 
    
 export default App;
+
+/* 
+here is one way to do it , but we will use Async Await
+what we use above is Asynchronous code, but we simplify it above
+Before: 
+   function fetchMoviesHandler() {
+   fetch('https://swapi.dev/api/films/')
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      const transformedMovies = data.results.map((movieData) => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releaseDate: movieData.release_date,
+        // now this is transformed and we store this with setMovie below
+        };
+      });  // this converts every object in the results array into a new object , an array full of new objects will be stored in transformed movies
+      setMovies(transformedMovies);  // we now have the parsed and extracted movies
+    });
+  }
+
+
+ {!isLoading && <MoviesList movies={movies}/>}  // if this is not loading, then we render the moviesList
+ {isLoading && <p>Loading...</p>} // if it is loading we render this p tag to say it is working
+ {!isLoading && movies.length === 0 && <p> No Movies Found. } // if there is an empty array and no movies to display, then we can use this state
+
+*/
