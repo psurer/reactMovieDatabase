@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect, useCallback } from 'react';
 // import logo from './logo.svg';
 import MoviesList from './components/MoviesList';
 import './App.module.css';
@@ -8,7 +8,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false); // we do not load data initially
   const [error, setError] = useState(null);
 
-  async function fetchMoviesHandler() {
+ const fetchMoviesHandler = useCallback(async () => { // async, any params we might get, then arrow function then the function body
   setIsLoading(true); // we change the state when we start to load 
   setError(null); // here we try some code and catch any potential errors
   try {
@@ -34,7 +34,13 @@ function App() {
       setError.apply(error.message);
    }
    setIsLoading(false); // we always want to stop loading even if there is no error
-  } 
+  }, []);
+  useEffect(() => {
+
+    fetchMoviesHandler();
+   }, [fetchMoviesHandler]); // our second arguement is this array of dependencies
+   // we will define when this useEffect function should be executed again
+   // it only is executed again if the dependencies listed here change
   // the values in the content variable will differ based on the state we have 
   let content = <p>Found No Movies</p>
   if (movies.length > 0) {
@@ -117,5 +123,16 @@ Before:
   and Our data might always be empty
 
   it is important to know how to handle these scenarios
+
+  // 
+  we should fetch data immediatle when user visit webpage
+  using the HTTP request is an effetc that ultimately changes our state
+  side effects should be go into UseEffect Hook
+
+  if not: then don't call the function as your main component function
+  THIS Can CREATE Infinite loop, you call the App function, it re-renders or
+  is re-evalutated and function is called again and so on, this is why we use useEffect
+  This is great when used as part of the component rende r cycle
+  but maybe not always when the component re-renders
 
   */
